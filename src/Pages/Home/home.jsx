@@ -8,64 +8,88 @@ import { connect } from "mqtt";
 import { useState } from "react";
 
 const Home = () => {
-  const data = [
-    ["Year", "Sales", "Expenses"],
-    ["Machine 1", 0, 0],
-    ["Machine 2", 0, 0],
-    ["Machine 3", 0, 0],
-    ["Machine 4", 0, 0],
-    ["Machine 5", 0, 0],
-    ["Machine 6", 0, 0],
-    ["Machine 7", 0, 0],
-    ["Machine 8", 0, 0],
-    ["Machine 9", 0, 0],
-    ["Machine 10", 0, 0],
-  ];
-
   const options = {
     title: "",
     curveType: "function",
     legend: { position: "none" },
   };
 
-  const [machineData, setMachineData] = useState([
-    { name: "Machine 1", status: "inprogress" },
-    { name: "Machine 2", status: "complete" },
-    { name: "Machine 3", status: "inprogress" },
-    { name: "Machine 4", status: "complete" },
-    { name: "Machine 5", status: "inprogress" },
-  ]);
+  const [data, setData] = useState({
+    cyclesPerDay: [6, 2, 3, 4, 7, 8, 9],
+    average: 40,
+    currState: [
+      [75, 5],
+      [0, 0],
+      [-1, 100],
+    ],
+    eneryToday: 80,
+  });
 
-  const client = connect("wss://test.mosquitto.org:8081");
+  const client = connect("ws://test.mosquitto.org:8081");
 
   client.on("connect", () => {
-    // TOOD: subscribe to topic to request machine data
-    client.subscribe("pee", (err) => {
-      if (!err) {
-        client.publish("pee", "poop");
-      }
+    console.log("connected");
+    client.subscribe("IOT_server_website_laundromates", (e) => {
+      if (!e) console.log("success");
     });
+    fetchStats();
   });
 
   client.on("message", (topic, message) => {
-    // TODO: parse machine data and update machineData state value
-    console.log(topic, message.toString());
+    /*
+      average: average time per cycle (in seconds)
+      currState: [completion percentag, minutes til end]
+      cycles: [mon-sun]
+      energyToday: energy consumed (today) in 
+    */
+
+    switch (topic) {
+      case "IOT_server_website_laundromates":
+        setData(JSON.parse(message.toString()));
+    }
+
     client.end();
   });
 
-  return (
+  const fetchStats = () => {
+    client.publish("IOT_nus_test", "requestData");
+  };
+
+  const dayMap = {
+    0: "Monday",
+    1: "Tuesday",
+    2: "Wednesday",
+    3: "Thursday",
+    4: "Friday",
+    5: "Saturday",
+    6: "Sunday",
+  };
+
+  return !data ? null : (
     <Container>
       <Navbar />
       <HomeTop />
-      <Stats data={machineData} />
-      <p className='chart__title'>Lorem ipsum dolor sit amet,</p>
-      <Chart
-        chartType='LineChart'
-        width='100%'
-        height='400px'
-        data={data}
-        options={options}
-      />
+      <Stats data={data} fetchStats={fetchStats} />
+      <p className='chart__title'>Cycles per day based on day of week</p>
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "center",
+          padding: "5rem 0",
+        }}
+      >
+        <Chart
+          chartType='Bar'
+          width='800px'
+          justifyContent='center'
+          height='400px'
+          data={[
+            ["Day", "Cycles"],
+            ...data.cyclesPerDay.map((c, i) => [dayMap[i], c]),
+          ]}
+          options={options}
+        />
+      </div>
       <Footer />
     </Container>
   );

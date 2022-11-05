@@ -1,37 +1,51 @@
 import { Container } from "./stats.styles";
-const Stats = ({ data }) => {
+const Stats = ({ data, fetchStats }) => {
   return (
     <Container>
-      <h1 className='title'>Lorem ipsum dolor sit amet,</h1>
-      <div className='cards__container'>
-        <div className='card'>
-          <p className='name'>Incomming Order Number</p>
-          <p className='number'>45</p>
-          <p className='date'>Today</p>
+      <h1 className='title'>Quick stats</h1>
+      <div
+        className='cards__container'
+        style={{ display: "flex", justifyContent: "space-between" }}
+      >
+        <div style={{ display: "flex" }}>
+          <div className='card' style={{ width: "260px", marginRight: "2rem" }}>
+            <p className='name'>Average cycle duration</p>
+            <p className='number'>{data.average}</p>
+            <p className='date'>minutes</p>
+          </div>
+          <div className='card' style={{ width: "260px" }}>
+            <h1 className='name'>Power consumption today</h1>
+            <h1 className='number'>{data.eneryToday}</h1>
+            <h1 className='date'>kWh</h1>
+          </div>
         </div>
-        <div className='card'>
-          <h1 className='name'>In Progress</h1>
-          <h1 className='number'>45</h1>
-          <h1 className='date'>Today</h1>
-        </div>
-        <div className='card'>
-          <h1 className='name'>Estimated Time For Next Wash</h1>
-          <h1 className='number'>00:00</h1>
-          <h1 className='date'>Today</h1>
-        </div>
+        <h1
+          style={{
+            color: "white",
+            textDecoration: "underline",
+            cursor: "pointer",
+          }}
+          onClick={fetchStats}
+        >
+          Refresh
+        </h1>
       </div>
       <h1 className='title' style={{ marginTop: "40px", marginBottom: "21px" }}>
-        Machine Stats
+        Realtime use
       </h1>
-      {data.map((m) => (
+      {data.currState.map((m, i) => (
         <div className='stats'>
-          <p className='stat_name'>{m.name}</p>
+          <p className='stat_name'>Machine {i + 1}</p>
 
           <div className='progress_container'>
-            <p className={`progress ${m.status}`}></p>
+            <p className={`progress`} style={{ width: `${m[0]}%` }}></p>
           </div>
-          <button className={`status ${m.status}`}>
-            {m.status === "complete" ? "Done" : "inprogress"}
+          <button className={`status ${m[0]}`}>
+            {m[0] === -1
+              ? "Available soon"
+              : m[1] > 0
+              ? `Available in ${m[1]} minutes`
+              : "Ready"}
           </button>
         </div>
       ))}
