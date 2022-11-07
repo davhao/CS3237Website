@@ -14,8 +14,8 @@ const Stats = ({ data, fetchStats }) => {
             <p className='date'>minutes</p>
           </div>
           <div className='card' style={{ width: "260px" }}>
-            <h1 className='name'>Power consumption today</h1>
-            <h1 className='number'>{data.eneryToday}</h1>
+            <h1 className='name'>Energy consumption today</h1>
+            <h1 className='number'>{data.eneryToday.toFixed(3)}</h1>
             <h1 className='date'>kWh</h1>
           </div>
         </div>
@@ -25,7 +25,7 @@ const Stats = ({ data, fetchStats }) => {
             textDecoration: "underline",
             cursor: "pointer",
           }}
-          onClick={fetchStats}
+          onClick={() => fetchStats()}
         >
           Refresh
         </h1>
@@ -41,11 +41,11 @@ const Stats = ({ data, fetchStats }) => {
             <p className={`progress`} style={{ width: `${m[0]}%` }}></p>
           </div>
           <button className={`status ${m[0]}`}>
-            {m[0] === -1
+            {m[1] === -1
               ? "Available soon"
               : m[1] > 0
               ? `Available in ${m[1]} minutes`
-              : "Ready"}
+              : "Available"}
           </button>
         </div>
       ))}
